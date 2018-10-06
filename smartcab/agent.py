@@ -42,8 +42,11 @@ class LearningAgent(Agent):
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
         
-        self.epsilon -= 0.05 
+#        self.epsilon -= 0.05 
+        
+        self.decay_epsilon(7)
         self.no_trials += 1
+        
         
         if(testing == True):
             self.epsilon = 0
@@ -70,7 +73,7 @@ class LearningAgent(Agent):
         # With the hand-engineered features, this learning process gets entirely negated.
         
         # Set 'state' as a tuple of relevant data for the agent        
-        state = (waypoint, inputs)
+        state = (waypoint, inputs['light'], inputs['left'], inputs['oncoming'])
 
         return state
 
@@ -109,8 +112,8 @@ class LearningAgent(Agent):
         if(self.learning == True):
             if (state not in self.Q.keys()): # if the state is not in the Q-table
                 action_Q = {x:0.0 for x in self.valid_actions}
-                print(action_Q, '\n')
-                print (state, "\n\n\n\n\n")
+#                print(action_Q, '\n')
+#                print (state, "\n\n\n\n\n")
                 self.Q[state] = action_Q            
 
         return
@@ -184,6 +187,28 @@ class LearningAgent(Agent):
         self.learn(state, action, reward)   # Q-learn
 
         return
+    
+    def decay_epsilon(self, func_number):
+        
+        if(self.alpha > 0 and self.alpha < 1):
+            if (func_number == 1):
+                self.epsilon = self.alpha ** self.no_trials
+            elif (func_number == 2):
+                self.epsilon = self.epsilon ** -(self.alpha * self.no_trials)
+            elif (func_number == 3):
+                self.epsilon = math.cos(self.alpha * self.no_trials)
+            elif (func_number == 4):
+                self.epsilon = 1 / (self.no_trials ** 2)
+            else:
+                self.epsilon -= 0.005
+        else:
+            self.epsilon -= 0.05
+                
+        return
+        
+                
+        
+    
         
 
 def run():
@@ -222,7 +247,7 @@ def run():
     #   optimized    - set to True to change the default log file name
     
     # sim = Simulator(env, update_delay=0.25, log_metrics=True)
-    sim = Simulator(env, update_delay=0.05, log_metrics=True)
+    sim = Simulator(env, update_delay=0.00001, log_metrics=True, optimized=True)
     #sim = Simulator(env)
     
     ##############
@@ -230,7 +255,7 @@ def run():
     # Flags:
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05 
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run(n_test=10)
+    sim.run(n_test=20, tolerance = 0.2)
 #    sim.run()
 
 
