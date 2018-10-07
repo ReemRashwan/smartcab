@@ -3,7 +3,6 @@ import math
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
-from random import randint
 
 class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
@@ -44,7 +43,7 @@ class LearningAgent(Agent):
         
 #        self.epsilon -= 0.05 
         
-        self.decay_epsilon(7)
+        self.decay_epsilon(0)
         self.no_trials += 1
         
         
@@ -90,9 +89,7 @@ class LearningAgent(Agent):
         maxQ = None
         
         state = str(state)
-#       for element in self.Q[state]:
         maxQ = max(self.Q[state].values())
-#            maxQ = self.Q[state][element]
             
         return maxQ 
 
@@ -139,19 +136,15 @@ class LearningAgent(Agent):
         state = str(state)
         
         if not(self.learning):
-#            rand = randint(0, 3)
-#            action = self.valid_actions[rand]
             action = random.choice(self.valid_actions) 
         elif self.learning:
             if self.epsilon > random.random():
                 action = random.choice(self.valid_actions) 
             else:
-                max_value = self.get_maxQ(state)  #<-- max of values
+                max_value = self.get_maxQ(state)
                 valid_max_actions = [action for action in self.Q[state] if self.Q[state][action] == max_value]
                 action = random.choice(valid_max_actions)
-            
-        
-        
+                
         return action
 
 
@@ -169,7 +162,7 @@ class LearningAgent(Agent):
         state = str(state)
         if (self.learning == True):
             self.Q[state][action] = (1 - self.alpha) * self.Q[state][action]  + self.alpha * reward
-            # Q[s][a] = (1 - alpha) * Q[s][a] + alpha * (reward + max(Q[s'][a']))
+            
              
         
         return
@@ -194,15 +187,13 @@ class LearningAgent(Agent):
             if (func_number == 1):
                 self.epsilon = self.alpha ** self.no_trials
             elif (func_number == 2):
-                self.epsilon = self.epsilon ** -(self.alpha * self.no_trials)
-            elif (func_number == 3):
                 self.epsilon = math.cos(self.alpha * self.no_trials)
-            elif (func_number == 4):
-                self.epsilon = 1 / (self.no_trials ** 2)
+            elif (func_number == 3):
+                self.epsilon = 1.0 / (self.no_trials ** 2)
             else:
                 self.epsilon -= 0.005
         else:
-            self.epsilon -= 0.05
+            self.epsilon -= 0.005
                 
         return
         
